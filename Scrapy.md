@@ -27,9 +27,9 @@ xxx/
             __init__.py
 ```
 
-![架构图](https://github.com/1255234553/skills/blob/main/20200321114058862.png)
+![架构图](https://github.com/1255234553/skills/blob/main/scrapyprocess.png)
 
-![说明](https://github.com/1255234553/skills/blob/main/cae91728c6303c4c8b5bcb72e25d5ced.jpg)
+![说明](https://github.com/1255234553/skills/blob/main/statement.png)
 
 ## Spider
 

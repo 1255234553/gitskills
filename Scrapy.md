@@ -27,7 +27,7 @@ xxx/
             __init__.py
 ```
 
-![架构图](C:\Users\lq\Desktop\20200321114058862.png)
+![架构图](https://github.com/1255234553/skills/blob/main/20200321114058862.png)
 
 ![说明](C:\Users\lq\Desktop\cae91728c6303c4c8b5bcb72e25d5ced.jpg)
 

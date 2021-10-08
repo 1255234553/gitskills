@@ -25,5 +25,5 @@ class HelloSpider(scrapy.Spider):
 
 ```
 
-![结果](C:\Users\lq\Desktop\TBG0(8_UDU~X06CXVIUGV)D.png)
+![结果](https://github.com/1255234553/skills/blob/main/TBG0(8_UDU%7EX06CXVIUGV)D.png)
 

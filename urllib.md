@@ -1,0 +1,305 @@
+# urllib
+
+## 1.基本使用
+
+```python
+# 使用urllib来获取百度首页的源码
+import urllib.request
+
+
+# (1)定义一个url   你要访问的地址
+url = 'http://www.baidu.com'
+
+# (2)模拟浏览器向服务器发送请求
+response = urllib.request.urlopen(url)
+
+# (3)获取响应中的页面的源码  content 内容
+# read方法  返回的是字节形式的二进制数据
+# 我们要将二进制的数据转换为字符串
+# 二进制--> 字符串    解码  decode('编码的格式')
+content = response.read().decode('utf-8')
+
+# (4) 打印内容
+print(content)
+```
+
+## 2.一个类型和六个方法
+
+ 一个类型：HTTPResponse
+ 六个方法：read readline readlines getcode geturl getheaders
+
+```python
+import urllib.request
+
+url = 'http://www.baidu.com'
+
+# 模拟浏览器向服务器发送请求
+response = urllib.request.urlopen(url)
+
+# 一个类型和六个方法
+# response是HTTPResponse的类型
+# print(type(response))
+
+# 按照一个字节一个字节去读
+# content = response.read()
+#
+# print(content)
+
+# 返回多少个字节
+# content = response.read(5)
+# print(content)
+
+# 读取一行
+# content = response.readline()
+# print(content)
+
+
+# content = response.readlines()
+# print(content)
+
+# 返回状态码     如果是200那么就证明我们的逻辑没有错
+print(response.getcode())
+
+# 返回url地址
+print(response.geturl())
+
+# 获取的是一些状态信息
+print(response.getheaders())
+
+# 一个类型 HTTPResponse
+# 六个方法 read readline readlines getcode geturl getheaders
+```
+
+## 3. 下载
+
+```python
+import urllib.request
+
+# 下载网页
+# url_page = 'http://www.baidu.com'
+#
+# # url代表的是下载的路径  filename代表文件的名字
+# # 在python中可以写变量的名字也可以直接写值
+# urllib.request.urlretrieve(url_page,'baidu.html')
+
+# 下载图片
+# url_img = 'https://img0.baidu.com/it/u=2845987849,2642460586&fm=26&fmt=auto'
+#
+# urllib.request.urlretrieve(url_img,'lisa.jpg')
+
+# 下载视频
+#.mp4只能在本地看 没有编译器
+url_video = 'https://vd4.bdstatic.com/mda-mjbvzk4r35e9g6sw/cae_h264/1634073942797781039/mda-mjbvzk4r35e9g6sw.mp4?v_from_s=hkapp-haokan-shunyi&auth_key=1634213899-0-0-4eb34452012fab5f1d80499bd86c44a5&bcevod_channel=searchbox_feed&pd=1&pt=3&abtest='
+urllib.request.urlretrieve(url_video,'guozu.mp4')
+```
+
+## 4. 请求对象的定制
+
+UA介绍：User Agent中文名为用户代理，简称UA，它是一个特殊字符串头，使得服务器能够识别客户使用的操作系统及版本、cpu类型、浏览器及版本。浏览器内核、浏览器渲染引擎、浏览器语言、浏览器插件等
+
+语法：`request = urllib.request.Request()`
+
+```python
+import urllib.request
+
+url = 'https://www.baidu.com'
+
+# url的组成
+# https://www.baidu.com/s?wd=周杰伦
+
+# http/https    www.baidu.com         80/443          s       wd = 周杰伦    #
+# 协议            主机                  端口号         路径      参数          锚点
+# http 80
+# https 443
+# mysql 3306
+# oracle 1521
+# redis 6379
+# mongodb 27017
+
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'
+}
+
+# 因为urlopen方法中不能存储字典所有headers不能传递进去
+# 请求对象的定制
+# 注意 因为参数顺序的问题不能直接写url和headers 中间还有data 所以我们需要关键字传参
+request = urllib.request.Request(url=url,headers=headers)
+
+
+response = urllib.request.urlopen(request)
+
+content = response.read().decode('utf8')
+
+print(content)
+```
+
+```python
+# Request方法中的参数顺序
+class Request:
+
+    def __init__(self, url, data=None, headers={},
+```
+
+## 5. 编解码
+
+### 5.1 get请求方式
+
+`urllib.parse.quote()`
+
+```python
+# https://www.baidu.com/s?wd=%E5%91%A8%E6%9D%B0%E4%BC%A6
+# 需求  获取 https://www.baidu.com/s?wd=周杰伦 的网页源码
+
+import urllib.request
+import urllib.parse
+url = 'https://www.baidu.com/s?wd='
+
+# 请求对象定制为了解决反爬的第一项手段
+headers = {
+    'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'
+}
+
+# 将周杰伦三个字变成unicode编码的格式
+# 我们需要依赖于urllib.parse
+name = urllib.parse.quote('周杰伦')
+
+url = url + name
+
+
+
+# 请求对象的定制
+request = urllib.request.Request(url=url,headers=headers)
+
+
+# 模拟浏览器向服务器发送请求
+response = urllib.request.urlopen(request)
+
+# 获取相应的内容
+content = response.read().decode('utf-8')
+
+# 打印数据
+print(content)
+```
+
+
+
+`urllib.parse.urlencode()`
+
+```python
+# urlencode应用场景：多个参数的时候
+
+# https://www.baidu.com/s?wd=周杰伦&sex=男
+import urllib.parse
+
+data = {
+    'wd':'周杰伦',
+    'sex':'男',
+    'location':'中国台湾省'
+}
+
+a = urllib.parse.urlencode(data)
+print(a)
+```
+
+### 5.2 post请求方式
+
+```python
+# post请求方式的参数  必须编码     data = urllib.parse.urlencode(data)
+# 参数是放在请求对象定制的方法中    request = urllib.request.Request(url=url,data=data,headers=headers)
+# 编码之后  必须调用encode方法    data = urllib.parse.urlencode(data).encode('utf-8')
+```
+
+```python
+# post请求
+import urllib.request
+import urllib.parse
+
+url = 'https://fanyi.baidu.com/sug'
+
+headers = {
+    'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'
+}
+
+data = {
+    'kw':'spider',
+}
+
+# post请求的参数必须进行编码
+data = urllib.parse.urlencode(data).encode('utf-8')
+
+# post的请求的参数是不会拼接在url的后面的   而需要放在请求对象的定制参数中
+# post请求的参数必须要进行编码
+request = urllib.request.Request(url=url,data=data,headers=headers)
+
+# 模拟浏览器向服务器发送请求
+response = urllib.request.urlopen(request)
+
+# 获取响应的数据
+content = response.read().decode('utf-8')
+
+# 字符串-->json对象
+
+import json
+
+obj = json.loads(content)
+print(obj)
+```
+
+```python
+import urllib.request
+import urllib.parse
+
+
+url = 'https://fanyi.baidu.com/v2transapi?from=en&to=zh'
+
+headers = {
+    'Accept': '*/*',
+   # 'Accept-Encoding':' gzip, deflate, br',
+    'Accept-Language':' zh-CN,zh;q=0.9',
+    'Connection':' keep-alive',
+    'Content-Length':' 135',
+    'Content-Type':' application/x-www-form-urlencoded; charset=UTF-8',
+    'Cookie: BIDUPSID=CB0D780F4BB4AB7EA789C5552D1C4BF3; PSTM=1630668488; BAIDUID=CB0D780F4BB4AB7E7DF34F2BDD210638:FG=1; BDSFRCVID_BFESS=TLtOJeC62iorHy6HMTaot_0fzmKQqtQTH6f3n3ZzcPm80cCUz_7kEG0PSx8g0Kub9Ib-ogKK0mOTHUkF_2uxOjjg8UtVJeC6EG0Ptf8g0f5; H_BDCLCKID_SF_BFESS=tbuO_KIXfC_3fP36qRo25J8ehgT22-usMeIO2hcH0KLKMpTuh4c_yMu7-fQJy5OhMDjib4j2Lxb1MRjvjRoMQl_Oj-JyttIe0GcvLh5TtUJ5JKnTDMRh-RvQjf7yKMnitIj9-pnG2hQrh459XP68bTkA5bjZKxtq3mkjbPbDfn02eCKuDT0WDjQyjH_sJJ0qM4oLXRbObbu_Hn7zepOd5M4pbt-qJtcy-eb8_qnzQnjofMAxbR6Vyp_L5bQnBT5htK_ehtcJLnCWhbOJ3J6rjPPkQN3TQbkO5bRiLR_XWR_VDn3oyT3VXp0n3fRly5jtMgOBBJ0yQ4b4OR5JjxonDh83bG7MJPKtfD7H3KCbfCLWMUK; __yjs_duid=1_6c7a0f63c0a0d4012cbde204a2f9e41b1631265899762; REALTIME_TRANS_SWITCH=1; FANYI_WORD_SWITCH=1; SOUND_SPD_SWITCH=1; HISTORY_SWITCH=1; SOUND_PREFER_SWITCH=1; BDORZ=B490B5EBF6F3CD402E515D22BCDA1598; H_PS_PSSID=; delPer=0; PSINO=1; BAIDUID_BFESS=CB0D780F4BB4AB7E7DF34F2BDD210638':'FG=1; BA_HECTOR=2k848k0l218k002g2m1gmibjd0r; Hm_lvt_64ecd82404c51e03dc91cb9e8c025574=1631844371,1634283119,1634283131; Hm_lpvt_64ecd82404c51e03dc91cb9e8c025574=1634284358; __yjs_st=2_Njc0MzhjYjU1ZTU4ODkyZjE4MTJhOGVmOWRhMWQyZGMzNzc5ZDBkYmYwNTU2YzE3MzdlYmVhN2Y5NmVmN2QyZDgxMmI1MjJjOTc1ZWYxNmUzNWJmMTJmYjNmNWY3NmQzMDE1NWQ0ZWNkMjAyNzU0ZGIxZmZlNmI2NjViZTgyOGViZmJhNmQ2NTdkN2M1YWUwNDhhMTA0YzZiZDdmOTg1MGNiZmFkMmRiMDU4YWJhMDU5ZGZkNTQzZWRhN2Q3MjJjY2FkMTNjMGQ5NWNmMzhmMjA1YzNmYjFiN2ZlZGFiMTg5NGI4ZTViZmViY2ZlNDYwMmFjMTQxNzJkODE4MWJiMl83X2M5MzYwYWZj; ab_sr=1.0.1_YjAyN2EyMTNhOWI5NmZmNmUxMWQ2ODc1ZDE4MDI5NzVmZDZhYmM3YmFhMWVhMmE4ZGU4N2FmNjVlNzExNTlhNjFiMWNiMGFkNWY4MWMxNTBmM2FkZDc1ZTU2NmVhYzQ0MDJmOWY1NDBhNDNiMjg1OTgwNGEzNzgyMWQ4NmE5NTQwOTIzYmE1YmM4MjVlOWRkMjlmYjZiNzQ2NmNjZmVkZA==',
+    'Host':' fanyi.baidu.com',
+    'Origin: https':'//fanyi.baidu.com',
+    'Referer: https':'//fanyi.baidu.com/?',
+    'sec-ch-ua':' "Chromium";v="94", "Google Chrome";v="94", ";Not A Brand";v="99"',
+    'sec-ch-ua-mobile':' ?0',
+    'sec-ch-ua-platform':' "Windows"',
+    'Sec-Fetch-Dest':' empty',
+    'Sec-Fetch-Mode':' cors',
+    'Sec-Fetch-Site':' same-origin',
+    'User-Agent':' Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36',
+    'X-Requested-With':' XMLHttpRequest',
+}
+
+data = {
+    'from': 'en',
+    'to': 'zh',
+    'query': 'love',
+    'transtype': 'realtime',
+    'simple_means_flag': '3',
+    'sign': '198772.518981',
+    'token': '5d52f67ae2a39f4778e202cda9e983a7',
+    'domain': 'common'
+}
+
+# post请求的参数  必须进行编码  并且要调用encode编码
+data = urllib.parse.urlencode(data).encode('utf-8')
+
+# 请求对象的定制
+request = urllib.request.Request(url=url,data=data,headers=headers)
+
+# 模拟浏览器向服务器发送请求
+response = urllib.request.urlopen(request)
+
+# 获取相应的数据
+content = response.read().decode('utf-8')
+
+
+import json
+
+obj = json.loads(content)
+print(obj)
+```
+

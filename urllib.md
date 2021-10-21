@@ -303,3 +303,375 @@ obj = json.loads(content)
 print(obj)
 ```
 
+
+
+## 6. ajax的get请求
+
+```python
+# get请求
+# 获取豆瓣电影的第一页的数据 并且保存起来
+import urllib.request
+
+url = 'https://movie.douban.com/j/chart/top_list?type=5&interval_id=100:90&action=&start=0&limit=20'
+
+headers = {
+    'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'
+}
+
+# （1）请求对象的定制
+request = urllib.request.Request(url=url,headers=headers)
+
+# (2) 获取响应的数据
+response = urllib.request.urlopen(request)
+content = response.read().decode('utf-8')
+
+print(content)
+
+# (3) 数据下载到本地
+# open方法默认情况下使用的是gbk的编码     如果我们想要保存汉字  那么需要在open方法中指定编码格式为utf-8
+# encoding='utf-8'
+
+# fp = open('douban.json','w',encoding='utf-8')
+# fp.write(content)
+
+with open('douban1.json','w',encoding='utf-8')as fp:
+    fp.write(content)
+```
+
+```python
+# https://movie.douban.com/j/chart/top_list?type=5&interval_id=100:90&action=&
+# start=0&limit=20
+
+# https://movie.douban.com/j/chart/top_list?type=5&interval_id=100:90&action=&
+# start=20&limit=20
+
+# https://movie.douban.com/j/chart/top_list?type=5&interval_id=100:90&action=&
+# start=40&limit=20
+
+# https://movie.douban.com/j/chart/top_list?type=5&interval_id=100:90&action=&
+# start=60&limit=20
+
+# page      1  2  3  4
+# start     0 20 40 60
+
+# start (page - 1)*20
+
+# 下载豆瓣电影前十页的数据
+# （1） 请求对象定制
+# （2） 获取响应的数据
+# （3） 下载数据
+
+import urllib.parse
+import urllib.request
+
+def creat_request(page):
+    base_url = 'https://movie.douban.com/j/chart/top_list?type=5&interval_id=100:90&action=&'
+
+    data = {
+        'start':(page - 1)*20,
+        'limit':20
+    }
+
+    data = urllib.parse.urlencode(data)
+
+    url = base_url + data
+
+    headers = {
+    'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'
+}
+
+    request = urllib.request.Request(url=url,headers=headers)
+    return request
+
+def get_content(request):
+    response = urllib.request.urlopen(request)
+    content = response.read().decode('utf-8')
+    return content
+def down_load(page,content):
+    with open('douban_' + str(page) + '.json','w',encoding='utf-8')as fp:
+        fp.write(content)
+
+# 程序的入口
+if __name__ == '__main__':
+    start_page = int(input('请输入起始的页码'))
+    end_page = int(input('请输入结束的页码'))
+
+    for page in range(start_page,end_page+1):
+#        每一页都有自己的请求对象的定制
+        request = creat_request(page)
+#       获取响应的数据
+        content = get_content(request)
+#       下载
+        down_load(page,content)
+```
+
+
+
+## 7. ajax的post请求
+
+```python
+# 1页
+# http://www.kfc.com.cn/kfccda/ashx/GetStoreList.ashx?op=cname
+# cname: 北京
+# pid:
+# pageIndex: 1
+# pageSize: 10
+
+
+# 2页
+# http://www.kfc.com.cn/kfccda/ashx/GetStoreList.ashx?op=cname
+# post
+# cname: 北京
+# pid:
+# pageIndex: 2
+# pageSize: 10
+
+import urllib.request
+import urllib.parse
+
+# base_url = 'http://www.kfc.com.cn/kfccda/ashx/GetStoreList.ashx?op=cname'
+
+def creat_request(page):
+    base_url = 'http://www.kfc.com.cn/kfccda/ashx/GetStoreList.ashx?op=cname'
+
+    data = {
+        'cname': '北京',
+        'pid':'',
+        'pageIndex': page,
+        'pageSize': '10'
+    }
+    data = urllib.parse.urlencode(data).encode('utf-8')
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'
+    }
+
+
+    request = urllib.request.Request(url=base_url,headers=headers,data=data)
+
+    return request
+def get_content(request):
+    response = urllib.request.urlopen(request)
+    content = response.read().decode('utf-8')
+    return content
+
+def down_load(page,content):
+    with open('kfc_' + str(page) +'.json','w',encoding='utf-8')as fp:
+        fp.write(content)
+
+
+if __name__ == '__main__':
+    start_page = int(input('请输入起始页码'))
+    end_page = int(input('请输入结束页码'))
+
+    for page in range(start_page,end_page+1):
+        # 请求对象的定制
+        request = creat_request(page)
+        # 获取网页的源码
+        content = get_content(request)
+        # 下载
+        down_load(page,content)
+```
+
+
+
+## 8. URLError\HTTPError
+
+1. HTTPError类是URLError的子类
+2. 导入的包urllib.error.HTTPError         urllib.error.URLError
+3. http错误：http错误是针对浏览器无法连接到服务器而增加出来的错误提示。引导并告诉浏览者该页是哪里出了问题。
+4. 通过urllib发送请求的时候，有可能会发生失败，这个时候如果想让你的代码更加健壮，可以通过try-except进行捕获异常，异常有两类，URLError\HTTPError
+
+```python
+import urllib.request
+import urllib.error
+
+# url = 'https://blog.csdn.net/sulixu/article/details/119818949'
+
+url = 'http:www.doudan1111.com'
+
+headers = {
+    'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'
+}
+try:
+    request = urllib.request.Request(url=url, headers=headers)
+
+    response = urllib.request.urlopen(request)
+
+    content = response.read().decode('utf-8')
+
+    print(content)
+except urllib.error.HTTPError:
+    print('系统正在升级。。。')
+except urllib.error.URLError:
+    print('系统真在升级。。。')
+```
+
+
+
+## 9. cookie登录
+
+```python
+# 适用的场景：数据采集的时候 需要绕过登录  然后进入某个页面
+# 个人信息页面是utf-8  但是还报错了编码错误  因为没有进入到个人信息页面   而是跳转到了登陆页面
+# 那么登录页面不是utf-8 所以报错
+
+# 什么情况下访问不成功
+# 因为请求头的信息不够    所有访问不成功
+import urllib.request
+
+url = 'https://weibo.cn/6426593421/info'
+
+headers = {
+#   ':authority':' weibo.cn',
+#   ':method':' GET',
+#   ':path':' /6426593421/info',
+#   ':scheme':' https',
+    'accept':' text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+#    'accept-encoding':' gzip, deflate, br',
+    'accept-language':' zh-CN,zh;q=0.9',
+    'cache-control':' max-age=0',
+#   cookie中携带着你的登录信息    如果有登录之后的cookie  那么我们就可以携带cookie进入任何页面
+    'cookie':' _T_WM=4979d33295d16f344f9fd0311c443633; SUB=_2A25Matc5DeRhGeBK6VQU-S3IyT2IHXVvlPlxrDV6PUJbktCOLUzjkW1NR8O-SSjurjTrRmcmYm3PvTx2oCNYDlrb; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WFPEJTAXD-sAn1sI433oIv55NHD95QcShzcSK.0ShzpWs4DqcjSi--ci-z0i-27BgpLw5tt; SSOLoginState=1634641770',
+#   referer    判断当前路径是不是由上一个路径进来的   一般情况下是做图片防盗链
+    'referer: https':'//weibo.cn/',
+    'sec-ch-ua':' "Chromium";v="94", "Google Chrome";v="94", ";Not A Brand";v="99"',
+    'sec-ch-ua-mobile':' ?0',
+    'sec-ch-ua-platform':' "Windows"',
+    'sec-fetch-dest':' document',
+    'sec-fetch-mode':' navigate',
+    'sec-fetch-site':' same-origin',
+    'sec-fetch-user':' ?1',
+    'upgrade-insecure-requests':' 1',
+    'user-agent':' Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36',
+}
+# 请求对象的定制
+request = urllib.request.Request(url=url,headers=headers)
+# 模拟服务器向服务器发送请求
+response = urllib.request.urlopen(request)
+# 获取响应的数据
+content = response.read().decode('utf-8')
+
+# 将数据保存到本地
+with open('weibo.html','w',encoding='utf-8')as fp:
+    fp.write(content)
+```
+
+
+
+## 10. Handler处理器
+
+```python
+# 需求：使用handler来访问百度  获取网页源码
+
+import urllib.request
+
+url = 'http://www.baidu.com'
+
+headers = {
+    'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'
+}
+
+request = urllib.request.Request(url=url,headers=headers)
+
+# handler   build_opener    open
+
+# （1）获取handler对象
+handler = urllib.request.HTTPHandler()
+
+# （2）获取opener对象
+opener = urllib.request.build_opener(handler)
+
+# （3）调用open方法
+response = opener.open(request)
+
+content = response.read().decode('utf-8')
+
+print(content)
+```
+
+## 11. 代理服务器
+
+代理的常用功能：
+
+1. 突破自身IP访问限制，访问国外站点
+2. 访问一些单位或团体内部资源
+3. 提高访问速度（通常代理服务器都设置一个较大的硬盘缓冲区，当有外界的信息通过时，同时也将其保存到缓冲区中，当其他用户再访问相同的信息时，则直接由缓冲区中取出信息，传给用户，以提高访问速度。）
+4. 隐藏真实IP（上网者也可以通过这种方式隐藏自己的IP免受攻击）
+
+代码配置代理
+
+- 创建Request对象
+- 创建ProxyHandler对象
+- 用handler对象创建opener对象
+- 使用opener.open函数发送请求
+
+```python
+import urllib.request
+
+url = 'https://www.baidu.com/s?wd=ip'
+
+headers = {
+    'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'
+}
+
+# 请求对象的定制
+request = urllib.request.Request(url=url,headers=headers)
+
+# 模拟浏览器访问服务器
+# response = urllib.request.urlopen(request)
+
+proxies = {
+    # 代理ip
+    'http':'202.102.86.228:8080'
+}
+
+# handler  build_opener  open
+handler = urllib.request.ProxyHandler(proxies = proxies)
+
+opener = urllib.request.build_opener(handler)
+
+response = opener.open(request)
+# 获取响应的信息
+content = response.read().decode('utf-8')
+
+# 保存
+with open('daili.html','w',encoding='utf-8')as fp:
+    fp.write(content)
+```
+
+
+
+## 12. 代理池
+
+```python
+import urllib.request
+proxies_pool = [
+    {'http':'118.24.219.151:16817'},
+    {'http':'118.24.219.151:16817'},
+]
+
+import random
+
+proxies = random.choice(proxies_pool)
+
+url = 'https://www.baidu.com/s?wd=ip'
+
+headers = {
+    'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'
+}
+
+request = urllib.request.Request(url=url,headers=headers)
+
+handler = urllib.request.ProxyHandler(proxies=proxies)
+
+opener = urllib.request.build_opener(handler)
+
+response = opener.open(request)
+
+content = response.read().decode('utf-8')
+
+with open('daili.html','w',encoding='utf-8')as fp:
+    fp.write(content)
+```
+
